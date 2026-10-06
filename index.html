@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EchoBuddy</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e8f3f2;--card:#fff;--ink:#12343b;--mut:#4d6b70;--teal:#0e7c86;--sun:#ffb703;--lil:#7b6cf6;--line:#c9e0de;--bad:#c0392b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e2226;--card:#16343a;--ink:#e6f3f2;--mut:#9fbfc2;--line:#27494f}}
+:root[data-theme="dark"]{--bg:#0e2226;--card:#16343a;--ink:#e6f3f2;--mut:#9fbfc2;--line:#27494f}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:16px}
+h1,h2,h3{font-family:'Baloo 2',sans-serif;margin:0;line-height:1.15}
+h1{font-size:2rem;font-weight:800}h1 span{color:var(--teal)}
+.tag{color:var(--mut);margin:2px 0 14px}
+nav{display:flex;gap:6px;margin-bottom:14px}
+nav button{flex:1;padding:10px 6px;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;font:700 .95rem Nunito;cursor:pointer}
+nav button[aria-selected=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+button:focus-visible,input:focus-visible{outline:3px solid var(--lil);outline-offset:2px}
+.panel{display:none}.panel.on{display:block}
+#log{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px;height:52vh;min-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.m{max-width:88%;padding:10px 13px;border-radius:16px}
+.u{align-self:flex-end;background:var(--teal);color:#fff;border-bottom-right-radius:4px}
+.b{align-self:flex-start;background:var(--bg);border-bottom-left-radius:4px}
+.q{margin-top:8px;padding:10px;border-left:4px solid var(--sun);background:var(--card);border-radius:8px}
+.sa{font-size:1.15rem;font-weight:700;margin:0 0 4px}
+.src{color:var(--mut);font-size:.85rem}
+form{display:flex;gap:8px;margin-top:10px}
+input[type=text]{flex:1;min-width:0;padding:12px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+.go{padding:0 18px;border:0;border-radius:14px;background:var(--sun);color:#12343b;font:800 1rem 'Baloo 2';cursor:pointer}
+.card{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.bar{display:flex;align-items:center;gap:8px;margin:6px 0}
+.bar b{width:74px;font-weight:600}.bar i{display:block;height:14px;border-radius:7px;background:var(--teal);min-width:2px;transition:width .4s}
+.risk{display:inline-block;padding:4px 14px;border-radius:20px;font:800 1.1rem 'Baloo 2';color:#fff}
+.low{background:#2e9e5b}.mid{background:#d98f00}.high{background:var(--bad)}
+.note{font-size:.88rem;color:var(--mut)}
+.alert{background:#fdecea;color:#7a1f16;border:2px solid var(--bad);border-radius:14px;padding:10px;margin-top:8px}
+.send{margin-top:10px;padding:10px 16px;border:0;border-radius:12px;background:var(--lil);color:#fff;font:700 1rem Nunito;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chips button{padding:6px 12px;border-radius:20px;border:2px solid var(--line);background:var(--card);color:var(--ink);font:600 .9rem Nunito;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--sun);border-color:var(--sun);color:#12343b}
+</style></head><body><div class="wrap">
+<h1>Echo<span>Buddy</span></h1>
+<p class="tag">A friendly AI companion that listens, uplifts and guides students.</p>
+<nav role="tablist">
+<button role="tab" aria-selected="true" data-p="chat">Chat</button>
+<button role="tab" aria-selected="false" data-p="parent">Parent Dashboard</button>
+<button role="tab" aria-selected="false" data-p="wisdom">Wisdom Library</button>
+</nav>
+
+<section id="chat" class="panel on">
+<div id="log" aria-live="polite"></div>
+<form id="f"><input type="text" id="t" placeholder="Tell EchoBuddy about your day..." autocomplete="off" aria-label="Message"><button class="go">Send</button></form>
+<p class="note">Demo uses a keyword-based emotion detector. The full project replaces it with a fine-tuned DistilBERT + LSTM model.</p>
+</section>
+
+<section id="parent" class="panel">
+<div class="card"><h2>Wellbeing summary</h2><div id="sum" style="margin-top:8px"></div></div>
+<div class="card"><h3>Emotions detected</h3><div id="bars"></div></div>
+<div class="card"><h3>Mood trend (last 10 messages)</h3><svg id="trend" viewBox="0 0 300 80" width="100%" role="img" aria-label="Mood trend line"></svg></div>
+<p class="note">EchoBuddy gives early signals only. It does not diagnose. Please talk with your child and consult a counsellor if concerned. Parents see a summary, never the full chat.</p>
+</section>
+
+<section id="wisdom" class="panel">
+<div class="chips" id="chips"></div><div id="wlist"></div>
+</section>
+</div>
+<script>
+const W=[
+{t:'anxiety',sa:'कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।',en:'You have the right to your effort, not to its results. Do your best in studies and let go of the fear of marks.',s:'Bhagavad Gita 2.47'},
+{t:'sad',sa:'उद्धरेदात्मनात्मानं नात्मानमवसादयेत् ।',en:'Lift yourself by your own effort and never let yourself sink. You are your own best friend, or your own enemy.',s:'Bhagavad Gita 6.5'},
+{t:'sad',sa:'मात्रास्पर्शास्तु कौन्तेय शीतोष्णसुखदुःखदाः । आगमापायिनोऽनित्यास्तांस्तितिक्षस्व भारत ॥',en:'Happiness and pain come and go like summer and winter. They do not stay forever, so bear them patiently.',s:'Bhagavad Gita 2.14'},
+{t:'anxiety',sa:'असंशयं महाबाहो मनो दुर्निग्रहं चलम् । अभ्यासेन तु कौन्तेय वैराग्येण च गृह्यते ॥',en:'The mind is restless and hard to control, but regular practice can train it. Try a little calm breathing every day.',s:'Bhagavad Gita 6.35'},
+{t:'courage',sa:'क्लैब्यं मा स्म गमः पार्थ नैतत्त्वय्युपपद्यते । क्षुद्रं हृदयदौर्बल्यं त्यक्त्वोत्तिष्ठ परन्तप ॥',en:'Do not give in to weakness. Let go of small-heartedness and stand up. Arjuna was afraid too, and he still found his courage.',s:'Bhagavad Gita 2.3'},
+{t:'comparison',sa:'श्रेयान्स्वधर्मो विगुणः परधर्मात्स्वनुष्ठितात् ।',en:'It is better to follow your own path, even imperfectly, than to follow someone else\'s path perfectly. Do not measure yourself by another person\'s journey.',s:'Bhagavad Gita 3.35'},
+{t:'anger',sa:'क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः ।',en:'Anger leads to confusion, and confusion makes us forget what we know. Pause before you react and you will think clearly.',s:'Bhagavad Gita 2.63'},
+{t:'anxiety',sa:'युक्ताहारविहारस्य युक्तचेष्टस्य कर्मसु । युक्तस्वप्नावबोधस्य योगो भवति दुःखहा ॥',en:'Balanced food, rest, play, work and sleep reduce sorrow. Sleep on time, eat well and take breaks while studying.',s:'Bhagavad Gita 6.17'},
+{t:'study',sa:'श्रद्धावाँल्लभते ज्ञानं तत्परः संयतेन्द्रियः ।',en:'One who has faith, focus and self-control gains knowledge. Put your phone away for a short time and give one task your full attention.',s:'Bhagavad Gita 4.39'},
+{t:'lonely',sa:'अद्वेष्टा सर्वभूतानां मैत्रः करुण एव च ।',en:'Be free from hatred, friendly and kind to all. Kindness is the quickest way to make friends and feel connected.',s:'Bhagavad Gita 12.13'},
+{t:'sad',sa:'अत्ता हि अत्तनो नाथो को हि नाथो परो सिया ।',en:'You are your own protector. Who else could be? Trust your inner strength, and also reach out to people who care.',s:'Dhammapada (Buddha), verse 160 (Pali)'},
+{t:'anger',sa:'न हि वेरेन वेरानि सम्मन्तीध कुदाचनं । अवेरेन च सम्मन्ति एस धम्मो सनन्तनो ॥',en:'Hatred is never ended by hatred. It ends by kindness. This is an ancient law.',s:'Dhammapada (Buddha), verse 5 (Pali)'},
+{t:'anxiety',sa:'मनोपुब्बङ्गमा धम्मा मनोसेट्ठा मनोमया ।',en:'The mind comes first in everything. Kind and calm thoughts lead to happiness. Notice your thoughts and choose gentle ones.',s:'Dhammapada (Buddha), verse 2 (Pali)'},
+{t:'courage',sa:'',en:'Hanuman first doubted he could leap across the ocean. Jambavan reminded him of his own strength, and he flew. Believe in the strength you already have.',s:'Ramayana'},
+{t:'courage',sa:'',en:'Prince Rama accepted 14 years in the forest calmly and kept his kindness and honesty all through. Hard times can build strong character.',s:'Ramayana'},
+{t:'lonely',sa:'',en:'Bharata and Lakshmana showed what true brotherhood means: they stood by Rama with love and loyalty. Real friends and family stay with you in hard times, so reach out to yours.',s:'Ramayana'},
+{t:'study',sa:'',en:'Shabari waited patiently for years, with devotion, to welcome Rama. Patience and steady effort are worth more than quick results. Study a little every day.',s:'Ramayana'},
+{t:'honesty',sa:'',en:'Vibhishana chose to speak the truth and stand for what is right even when his own family disagreed. Being honest takes courage, and it earns lasting respect.',s:'Ramayana'},
+{t:'failure',sa:'',en:'APJ Abdul Kalam sold newspapers as a boy and missed selection into the Air Force by one rank. He kept going and became a great scientist and India\'s President. A closed door is not the end of your road.',s:'Real-life story'},
+{t:'failure',sa:'',en:'Thomas Edison tried thousands of materials before the light bulb worked. He said he had found ways that did not work. Every mistake teaches you something.',s:'Real-life story'},
+{t:'failure',sa:'',en:'J.K. Rowling\'s first Harry Potter book was rejected by many publishers. She tried again and now millions of children read it.',s:'Real-life story'},
+{t:'failure',sa:'',en:'Srinivasa Ramanujan failed his college exams because he only studied mathematics. He kept working, wrote to a famous mathematician, and became one of the greatest mathematicians ever.',s:'Real-life story'},
+{t:'lonely',sa:'',en:'Dr. B.R. Ambedkar faced harsh discrimination in school, yet studied with great determination and helped write India\'s Constitution. Your circumstances do not decide your worth.',s:'Real-life story'},
+{t:'courage',sa:'',en:'Arunima Sinha lost a leg in 2011 and just two years later climbed Mount Everest. She said she would not let one accident decide her life.',s:'Real-life story'},
+{t:'courage',sa:'',en:'Stephen Hawking was diagnosed with a serious illness at 21 and was told he had little time. He went on to do brilliant work in physics for decades.',s:'Real-life story'},
+{t:'sad',sa:'',en:'Helen Keller could neither see nor hear, yet she learned to read, write and speak, graduated from college, and inspired the world. Hope can grow in the hardest situations.',s:'Real-life story'},
+{t:'comparison',sa:'',en:'Mary Kom grew up in a poor farming family in Manipur and became a world boxing champion many times. Her journey was her own, and so is yours.',s:'Real-life story'},
+{t:'tip',sa:'',en:'5-4-3-2-1 calm trick: name 5 things you see, 4 you can touch, 3 you hear, 2 you smell and 1 you taste. It brings your mind back to now.',s:'Calming exercise'},
+{t:'tip',sa:'',en:'Box breathing: breathe in for 4 counts, hold for 4, breathe out for 4, hold for 4. Repeat 4 times before an exam or when upset.',s:'Calming exercise'},
+{t:'tip',sa:'',en:'Write down 3 good things from today before sleep. Over time this trains your mind to notice the positive side of life.',s:'Gratitude habit'},
+{t:'tip',sa:'',en:'Talk to someone you trust, such as a parent, teacher or friend. Sharing a worry makes it lighter. Asking for help is a sign of strength.',s:'Wellbeing tip'}];
+const L={sad:'sad unhappy cry crying hurt down upset bad miserable depressed empty hopeless tired worthless',anxiety:'worried worry scared afraid nervous anxious exam stress stressed tension panic fear pressure',anger:'angry mad hate annoyed furious irritated fight',lonely:'alone lonely friendless ignored nobody bullied left',comparison:'jealous compare compared behind everyone better',failure:'fail failed failing lost low marks fell rejected useless',happy:'happy good great fun excited proud love enjoyed won glad awesome nice'};
+const CRISIS=/(kill myself|end my life|want to die|suicide|hurt myself|no reason to live)/i;
+const NEG=['sad','anxiety','anger','lonely','failure','comparison'];
+const hist=[];const $=id=>document.getElementById(id);
+function detect(x){const w=x.toLowerCase().match(/[a-z']+/g)||[];const r={};for(const k in L){const s=L[k].split(' ');r[k]=w.filter(a=>s.includes(a)).length}
+if(/low marks|not good|can't sleep|no friends|nobody (likes|talks)/i.test(x)){r.failure+=/marks/.test(x)?1:0;r.lonely+=/friend|nobody/.test(x)?1:0}return r}
+function pick(r){let b='',n=0;for(const k of NEG)if(r[k]>n){n=r[k];b=k}return b}
+function add(c,h){const d=document.createElement('div');d.className='m '+c;d.innerHTML=h;$('log').appendChild(d);$('log').scrollTop=1e5}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function quote(i){return `<div class="q">${i.sa?`<p class="sa" lang="sa">${i.sa}</p>`:''}<div>${i.en}</div><div class="src">${i.s}</div></div>`}
+function reply(x,r){
+if(CRISIS.test(x))return `I am really glad you told me. You matter, and you do not have to carry this alone. Please talk to a trusted adult right now, or call Tele-MANAS at <b>14416</b> (free, 24x7 in India). I have also asked your parents to check in with you.`;
+const k=pick(r);
+if(!k)return r.happy?'That is wonderful to hear! Tell me more. What made your day good?':'Thanks for sharing. Tell me more about your day. How are you feeling right now?';
+const ask={sad:'I am sorry you feel low. Your feelings are valid, and this will pass.',anxiety:'It sounds like you feel under pressure. Take one slow breath with me. You are doing better than you think.',anger:'I hear that you are upset. It is okay to feel angry. Let us cool down together.',lonely:'You are not alone, because I am here, and many people care about you.',failure:'One setback does not define you. Let me share something.',comparison:'Everyone grows at their own pace. Comparing yourself hurts more than it helps.'}[k];
+const c=W.filter(i=>i.t===k||(k==='failure'&&i.t==='courage')||(k==='anxiety'&&i.t==='tip'));const i=c[hist.length%c.length];
+return ask+quote(i)+'<p>What is one small thing you can do today to feel a little better?</p>'}
+$('f').onsubmit=async e=>{e.preventDefault();const x=$('t').value.trim();if(!x)return;add('u',esc(x));$('t').value='';
+const r=detect(x);try{const q=await fetch('/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:x})});if(q.ok){const j=await q.json();for(const k in j.groups)r[k]=Math.max(r[k]||0,j.groups[k]>0.4?1:0)}}catch(_){}const neg=NEG.reduce((a,k)=>a+r[k],0);const crisis=CRISIS.test(x);
+hist.push({r,score:crisis?-3:r.happy-neg,crisis});setTimeout(()=>{add('b',reply(x,r));dash()},350)};
+function dash(){const tot={};for(const k in L)tot[k]=hist.reduce((a,h)=>a+h.r[k],0);
+const mx=Math.max(1,...Object.values(tot));
+$('bars').innerHTML=Object.keys(tot).map(k=>`<div class="bar"><b>${k}</b><i style="width:${tot[k]/mx*60}%"></i><span>${tot[k]}</span></div>`).join('');
+const last=hist.slice(-10),n=last.length;
+const negMsgs=last.filter(h=>h.score<0).length;const crisis=hist.some(h=>h.crisis);
+let lvl='low',lab='Low concern';
+if(crisis||(n>=4&&negMsgs/n>=.75)){lvl='high';lab='High concern'}else if(n>=3&&negMsgs/n>=.5){lvl='mid';lab='Moderate concern'}
+const top=NEG.map(k=>[k,tot[k]]).sort((a,b)=>b[1]-a[1])[0];
+let txt=!n?'No conversations yet. Chat with EchoBuddy to see the summary.':
+`In the last ${n} message(s), ${negMsgs} showed negative feelings. Most common theme: <b>${top[1]?top[0]:'none'}</b>. `+(lvl==='high'?'The student may need emotional support soon. Please talk with them kindly and consider a counsellor.':lvl==='mid'?'Some stress is visible. A caring conversation at home can help.':'The student seems to be doing fine.');
+$('sum').innerHTML=`<span class="risk ${lvl}">${lab}</span><p>${txt}</p>`+(crisis?'<div class="alert"><b>Urgent:</b> a serious statement was detected. Please contact your child now. Tele-MANAS: 14416.</div>':'')+(n?'<button class="send" id="sb">Send summary to parents</button>':'');
+const sb=$('sb');if(sb)sb.onclick=()=>{sb.textContent='Summary sent (demo)';sb.disabled=true};
+let p='',pts=last.map((h,i)=>[n>1?i*300/(n-1):150,40-Math.max(-3,Math.min(3,h.score))*11]);
+$('trend').innerHTML='<line x1="0" y1="40" x2="300" y2="40" stroke="currentColor" opacity=".25" stroke-dasharray="4"/>'+(n?`<polyline fill="none" stroke="#0e7c86" stroke-width="3" points="${pts.map(a=>a.join(',')).join(' ')}"/>`+pts.map(a=>`<circle cx="${a[0]}" cy="${a[1]}" r="4" fill="#ffb703"/>`).join(''):'')}
+function wis(tag){const c=tag==='all'?W:W.filter(i=>i.t===tag);$('wlist').innerHTML=c.map(quote).join('')}
+const tags=['all','sad','anxiety','anger','lonely','failure','courage','comparison','study','honesty','tip'];
+$('chips').innerHTML=tags.map(t=>`<button aria-pressed="${t==='all'}" data-t="${t}">${t}</button>`).join('');
+$('chips').onclick=e=>{const b=e.target.closest('button');if(!b)return;[...$('chips').children].forEach(c=>c.setAttribute('aria-pressed',c===b));wis(b.dataset.t)};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.p))});
+add('b','Hi, I am EchoBuddy, your friend. How was your day today?');wis('all');dash();
+</script></body></html>
