@@ -118,4 +118,4 @@ Quick demo without training: just open `index.html` in a browser (keyword mode).
 **EchoBuddy: An Early Emotional Wellbeing Companion for Students**
 
 Created as an Artificial Intelligence (Machine Learning / Deep Learning) project.
-Author: `<Your Name>` | Contact: `<Your Email>`
+Author: `<Krishna Sharma>` | Contact: `<www.krishnasharma21@gmail.com>`
